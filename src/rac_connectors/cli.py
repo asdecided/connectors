@@ -16,6 +16,11 @@ import sys
 from collections.abc import Iterable, Iterator
 from typing import TextIO
 
+from .atlassian import AtlassianVerifier
+from .atlassian.client import (
+    MissingCredentialsError as AtlassianMissingCredentialsError,
+)
+from .atlassian.client import client_from_env as atlassian_client_from_env
 from .base import Connector, PushSummary
 from .cognee import CogneeConnector
 from .cognee.client import MissingCredentialsError as CogneeMissingCredentialsError
@@ -294,6 +299,40 @@ def _run_neo4j(args: argparse.Namespace) -> int:
     return 0
 
 
+def _run_atlassian_verify(args: argparse.Namespace) -> int:
+    stream, owned = _open_stream(args.input)
+    try:
+        payload = stream.read()
+    finally:
+        if owned:
+            stream.close()
+
+    try:
+        graph = parse_graph(payload)
+    except MalformedGraphError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 1
+
+    if args.dry_run:
+        verifier = AtlassianVerifier()
+    else:
+        try:
+            verifier = AtlassianVerifier(atlassian_client_from_env())
+        except AtlassianMissingCredentialsError as exc:
+            print(f"error: {exc}", file=sys.stderr)
+            return 2
+
+    summary = verifier.verify(graph, dry_run=args.dry_run)
+
+    if args.dry_run or args.verbose or summary.findings:
+        for action in summary.actions:
+            print(action)
+    print(summary.summary_line(), file=sys.stderr)
+    # 3 = references failed verification (ADR-010) — CI can gate on state
+    # without conflating it with malformed input (1) or missing creds (2).
+    return summary.exit_code
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="rac-connect",
@@ -495,6 +534,41 @@ def build_parser() -> argparse.ArgumentParser:
         help="Print per-node/edge actions on a live push too.",
     )
     neo.set_defaults(func=_run_neo4j)
+
+    # The Atlassian suite is one backend with several verbs (ADR-010): nested
+    # subcommands keep `rac-connect <backend>` a single namespace as
+    # comment-mode and ingest verbs join later.
+    atl = sub.add_parser(
+        "atlassian",
+        help="Verify Jira references and publish Confluence pages (ADR-010/011).",
+    )
+    atl_sub = atl.add_subparsers(dest="verb", required=True)
+
+    ver = atl_sub.add_parser(
+        "verify",
+        help=(
+            "Check the --graph projection's Jira related_tickets references "
+            "against the instance (read-only; exit 3 on findings)."
+        ),
+    )
+    ver.add_argument(
+        "--input",
+        "-i",
+        default=None,
+        help="--graph JSON file to read (default: stdin). '-' also means stdin.",
+    )
+    ver.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="List the references that would be checked without calling Jira.",
+    )
+    ver.add_argument(
+        "--verbose",
+        "-v",
+        action="store_true",
+        help="Print per-reference results on a live verify too.",
+    )
+    ver.set_defaults(func=_run_atlassian_verify)
     return parser
 
 

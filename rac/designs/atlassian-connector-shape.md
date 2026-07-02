@@ -36,9 +36,12 @@ src/rac_connectors/atlassian/
                   classification; remote-link upsert helper
   render.py       render_storage(markdown) -> str, body_hash(storage) -> str
   confluence.py   publish_records(): property lookup, create/update/skip
-  connector.py    AtlassianVerifier / AtlassianPublisher seam implementations,
-                  VerifySummary
+  connector.py    AtlassianVerifier / AtlassianPublisher seam implementations
 ```
+
+`VerifySummary` sits beside `PushSummary` in the shared `base.py`, where the
+`TicketVerifier` and `PagePublisher` Protocols also live (the ADR-003
+precedent: seams are shared shape, implementations are per-backend).
 
 **Client.** `HttpAtlassianClient` implements both Protocols over one `httpx`
 client (imported lazily so the core install stays dependency-free). Base

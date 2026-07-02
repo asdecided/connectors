@@ -21,8 +21,11 @@ from .client import (
     VersionConflictError,
     client_from_env,
 )
+from .connector import BACKEND, AtlassianVerifier
 
 __all__ = [
+    "BACKEND",
+    "AtlassianVerifier",
     "BASE_URL_ENV",
     "EMAIL_ENV",
     "SPACE_ENV",

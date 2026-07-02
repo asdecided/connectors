@@ -49,6 +49,64 @@ class PushSummary:
         return f"{self.backend} {mode}: {self.pushed} pushed, {self.skipped} skipped"
 
 
+@dataclass
+class VerifySummary:
+    """The outcome of an external-reference verification (ADR-010).
+
+    The verify seam returns a report, never records — the shape itself keeps
+    the rejected recall/re-rank surface impossible. ``missing`` and
+    ``forbidden`` are findings; ``skipped`` counts external edges the
+    verifier deliberately did not check (other providers, provider-less
+    ``verified_by`` edges, unparseable targets).
+    """
+
+    backend: str
+    checked: int = 0
+    exists: int = 0
+    missing: int = 0
+    forbidden: int = 0
+    skipped: int = 0
+    dry_run: bool = False
+    actions: list[str] = field(default_factory=list)
+
+    def record_exists(self, key: str, detail: str) -> None:
+        self.checked += 1
+        self.exists += 1
+        self.actions.append(f"exists {key}: {detail}")
+
+    def record_missing(self, key: str, detail: str) -> None:
+        self.checked += 1
+        self.missing += 1
+        self.actions.append(f"missing {key}: {detail}")
+
+    def record_forbidden(self, key: str, detail: str) -> None:
+        self.checked += 1
+        self.forbidden += 1
+        self.actions.append(f"forbidden {key}: {detail}")
+
+    def record_skip_item(self, label: str, reason: str) -> None:
+        self.skipped += 1
+        self.actions.append(f"skip {label}: {reason}")
+
+    @property
+    def findings(self) -> int:
+        return self.missing + self.forbidden
+
+    @property
+    def exit_code(self) -> int:
+        # 3 is the CI-gateable "references failed verification" contract
+        # (ADR-010) — distinct from malformed input (1) and missing creds (2).
+        return 3 if self.findings else 0
+
+    def summary_line(self) -> str:
+        mode = "dry-run" if self.dry_run else "verify"
+        return (
+            f"{self.backend} {mode}: {self.checked} checked, "
+            f"{self.exists} exist, {self.missing} missing, "
+            f"{self.forbidden} forbidden, {self.skipped} skipped"
+        )
+
+
 @runtime_checkable
 class Connector(Protocol):
     """Outbound-only sink for export records.
@@ -89,5 +147,48 @@ class GraphConnector(Protocol):
 
         With ``dry_run=True`` the connector must describe what it would write
         without connecting to the backend.
+        """
+        ...
+
+
+@runtime_checkable
+class TicketVerifier(Protocol):
+    """Read-only checker for external ticket references (ADR-010).
+
+    An operator-facing state check delegated by rac-core ADR-087 — not a
+    recall surface for reading agents, which ADR-002 rejects. ``verify``
+    writes nothing anywhere; it reports whether the ``external`` ticket edges
+    in a ``--graph`` export still point at real, reachable issues.
+    """
+
+    name: str
+
+    def verify(self, graph: Graph, *, dry_run: bool = False) -> VerifySummary:
+        """Check the graph's ticket references, returning a :class:`VerifySummary`.
+
+        With ``dry_run=True`` the verifier must list what it would check
+        without making any network call.
+        """
+        ...
+
+
+@runtime_checkable
+class PagePublisher(Protocol):
+    """Outbound page mirror for the ``--documents`` projection (ADR-010).
+
+    Like :class:`Connector` it only writes outward and must be idempotent on
+    each record's canonical ``id`` — for pages, via the artifact-id content
+    property and body-hash skip recorded in ADR-011.
+    """
+
+    name: str
+
+    def publish(
+        self, records: Iterable[Record], *, dry_run: bool = False
+    ) -> PushSummary:
+        """Upsert ``records`` as managed pages, returning a :class:`PushSummary`.
+
+        With ``dry_run=True`` the publisher must describe what it would write
+        without making any network call.
         """
         ...
