@@ -12,11 +12,13 @@ object::
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 from collections.abc import Iterable, Iterator
 from typing import TextIO
 
-from .atlassian import AtlassianVerifier
+from .atlassian import AtlassianPublisher, AtlassianVerifier
+from .atlassian.client import SPACE_ENV
 from .atlassian.client import (
     MissingCredentialsError as AtlassianMissingCredentialsError,
 )
@@ -333,6 +335,47 @@ def _run_atlassian_verify(args: argparse.Namespace) -> int:
     return summary.exit_code
 
 
+def _run_atlassian_publish(args: argparse.Namespace) -> int:
+    space = args.space or os.environ.get(SPACE_ENV, "")
+    if not args.dry_run and not space:
+        print(
+            f"error: no Confluence space configured; pass --space or set {SPACE_ENV}",
+            file=sys.stderr,
+        )
+        return 2
+
+    publisher = AtlassianPublisher(space_key=space)
+    stream, owned = _open_stream(args.input)
+    try:
+        if not args.dry_run:
+            try:
+                publisher = AtlassianPublisher(
+                    atlassian_client_from_env(), space_key=space
+                )
+            except AtlassianMissingCredentialsError as exc:
+                print(f"error: {exc}", file=sys.stderr)
+                return 2
+        try:
+            summary = PushSummary(backend=publisher.name, dry_run=args.dry_run)
+            records = _records_with_skip_report(stream, summary, strict=args.strict)
+            published = publisher.publish(records, dry_run=args.dry_run)
+            summary.pushed = published.pushed
+            summary.skipped += published.skipped
+            summary.actions = published.actions + summary.actions
+        except MalformedRecordError as exc:
+            print(f"error: {exc}", file=sys.stderr)
+            return 1
+    finally:
+        if owned:
+            stream.close()
+
+    if args.dry_run or args.verbose:
+        for action in summary.actions:
+            print(action)
+    print(summary.summary_line(), file=sys.stderr)
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="rac-connect",
@@ -569,6 +612,42 @@ def build_parser() -> argparse.ArgumentParser:
         help="Print per-reference results on a live verify too.",
     )
     ver.set_defaults(func=_run_atlassian_verify)
+
+    pub = atl_sub.add_parser(
+        "publish",
+        help=(
+            "Mirror the --documents stream into a Confluence space as managed "
+            "pages (idempotent on the canonical id)."
+        ),
+    )
+    pub.add_argument(
+        "--input",
+        "-i",
+        default=None,
+        help="JSONL file to read (default: stdin). '-' also means stdin.",
+    )
+    pub.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Print the pages that would be upserted without calling the API.",
+    )
+    pub.add_argument(
+        "--strict",
+        action="store_true",
+        help="Fail on a malformed line instead of skipping it.",
+    )
+    pub.add_argument(
+        "--space",
+        default=None,
+        help=f"Confluence space key (default: {SPACE_ENV} from the environment).",
+    )
+    pub.add_argument(
+        "--verbose",
+        "-v",
+        action="store_true",
+        help="Print per-page actions on a live publish too.",
+    )
+    pub.set_defaults(func=_run_atlassian_publish)
     return parser
 
 
