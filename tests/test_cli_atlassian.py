@@ -91,3 +91,51 @@ def test_verify_warns_on_contract_major_mismatch(monkeypatch, capsys) -> None:
 def test_atlassian_requires_a_verb() -> None:
     with pytest.raises(SystemExit):
         cli.main(["atlassian"])
+
+
+_DOCS = Path(__file__).parent / "fixtures_documents.jsonl"
+
+
+def test_publish_dry_run_needs_no_credentials_or_space(monkeypatch, capsys) -> None:
+    _clear_env(monkeypatch)
+    monkeypatch.delenv("ATLASSIAN_CONFLUENCE_SPACE", raising=False)
+    monkeypatch.setattr("sys.stdin", io.StringIO(_DOCS.read_text()))
+    rc = cli.main(["atlassian", "publish", "--dry-run"])
+    assert rc == 0
+    out = capsys.readouterr()
+    assert "would upsert page" in out.out
+    assert "pushed" in out.err
+
+
+def test_publish_live_without_space_exits_two(monkeypatch, capsys) -> None:
+    _clear_env(monkeypatch)
+    monkeypatch.delenv("ATLASSIAN_CONFLUENCE_SPACE", raising=False)
+    monkeypatch.setattr("sys.stdin", io.StringIO(_DOCS.read_text()))
+    rc = cli.main(["atlassian", "publish"])
+    assert rc == 2
+    assert "ATLASSIAN_CONFLUENCE_SPACE" in capsys.readouterr().err
+
+
+def test_publish_live_without_credentials_exits_two(monkeypatch, capsys) -> None:
+    _clear_env(monkeypatch)
+    monkeypatch.setattr("sys.stdin", io.StringIO(_DOCS.read_text()))
+    rc = cli.main(["atlassian", "publish", "--space", "DOCS"])
+    assert rc == 2
+    assert "ATLASSIAN_API_TOKEN" in capsys.readouterr().err
+
+
+def test_publish_skips_malformed_line_and_reports(monkeypatch, capsys) -> None:
+    lines = _DOCS.read_text() + '{"id": ""}\n'
+    monkeypatch.setattr("sys.stdin", io.StringIO(lines))
+    rc = cli.main(["atlassian", "publish", "--dry-run"])
+    assert rc == 0
+    out = capsys.readouterr()
+    assert "skip line" in out.out
+
+
+def test_publish_strict_fails_on_malformed_line(monkeypatch, capsys) -> None:
+    lines = _DOCS.read_text() + '{"id": ""}\n'
+    monkeypatch.setattr("sys.stdin", io.StringIO(lines))
+    rc = cli.main(["atlassian", "publish", "--dry-run", "--strict"])
+    assert rc == 1
+    assert "error:" in capsys.readouterr().err
