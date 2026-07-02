@@ -1,0 +1,55 @@
+{
+  "schema_version": "1",
+  "source": "rac",
+  "nodes": [
+    {"id": "RAC-1", "type": "roadmap", "status": "Planned", "title": "Roadmap"},
+    {"id": "RAC-2", "type": "requirement", "status": "Accepted", "title": "Req"}
+  ],
+  "edges": [
+    {
+      "source": "RAC-1",
+      "target": "PROJ-123",
+      "type": "related_tickets",
+      "directed": false,
+      "resolved": false,
+      "external": true,
+      "provider": "jira"
+    },
+    {
+      "source": "RAC-2",
+      "target": "https://example.atlassian.net/browse/PROJ-404",
+      "type": "related_tickets",
+      "directed": false,
+      "resolved": false,
+      "external": true,
+      "provider": "jira"
+    },
+    {
+      "source": "RAC-1",
+      "target": "itsthelore/rac-core#228",
+      "type": "related_tickets",
+      "directed": false,
+      "resolved": false,
+      "external": true,
+      "provider": "github"
+    },
+    {
+      "source": "RAC-2",
+      "target": "tests/test_req.py",
+      "type": "verified_by",
+      "directed": true,
+      "resolved": false,
+      "external": true,
+      "provider": null
+    },
+    {
+      "source": "RAC-1",
+      "target": "RAC-2",
+      "type": "related_requirements",
+      "directed": false,
+      "resolved": true,
+      "external": false,
+      "provider": null
+    }
+  ]
+}
