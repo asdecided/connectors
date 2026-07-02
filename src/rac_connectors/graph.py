@@ -52,6 +52,10 @@ class GraphEdge:
     …) from rac's registry; ``directed`` carries its registry direction.
     ``resolved`` is False when the reference did not resolve uniquely, in which
     case ``target`` is the literal reference text rather than a canonical id.
+    ``external`` marks an external-target edge (``related_tickets``, rac-core
+    ADR-087; ``verified_by``, rac-core ADR-096) — unresolved by design, not a
+    dangling in-corpus link. ``provider`` carries the repository's configured
+    ticketing provider on ticket edges and is None everywhere else.
     """
 
     source: str
@@ -59,6 +63,8 @@ class GraphEdge:
     type: str
     directed: bool
     resolved: bool
+    external: bool = False
+    provider: str | None = None
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> GraphEdge:
@@ -67,6 +73,7 @@ class GraphEdge:
                 raise MalformedGraphError(f"edge missing or non-string {key!r}")
         if not data["source"] or not data["target"]:
             raise MalformedGraphError("edge 'source'/'target' must be non-empty")
+        provider = data.get("provider")
         return cls(
             source=data["source"],
             target=data["target"],
@@ -74,6 +81,8 @@ class GraphEdge:
             # Defaults keep the reader tolerant of additive contract growth.
             directed=bool(data.get("directed", True)),
             resolved=bool(data.get("resolved", True)),
+            external=bool(data.get("external", False)),
+            provider=provider if isinstance(provider, str) else None,
         )
 
 
