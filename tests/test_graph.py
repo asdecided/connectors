@@ -67,6 +67,58 @@ def test_edge_flags_default_when_absent() -> None:
     edge = parse_graph(json.dumps(payload)).edges[0]
     assert edge.directed is True  # additive-tolerant defaults
     assert edge.resolved is True
+    assert edge.external is False
+    assert edge.provider is None
+
+
+def test_external_edge_carries_provider() -> None:
+    payload = {
+        "source": "rac",
+        "nodes": [],
+        "edges": [
+            {
+                "source": "RAC-1",
+                "target": "PROJ-123",
+                "type": "related_tickets",
+                "directed": False,
+                "resolved": False,
+                "external": True,
+                "provider": "jira",
+            },
+            {
+                "source": "RAC-1",
+                "target": "tests/test_thing.py",
+                "type": "verified_by",
+                "directed": True,
+                "resolved": False,
+                "external": True,
+                "provider": None,
+            },
+        ],
+    }
+    ticket, verifier = parse_graph(json.dumps(payload)).edges
+    assert ticket.external is True
+    assert ticket.provider == "jira"
+    assert verifier.external is True
+    assert verifier.provider is None  # verified_by is never provider-tagged
+
+
+def test_non_string_provider_tolerated_as_none() -> None:
+    payload = {
+        "source": "rac",
+        "nodes": [],
+        "edges": [
+            {
+                "source": "A",
+                "target": "B",
+                "type": "related_tickets",
+                "external": True,
+                "provider": 7,
+            }
+        ],
+    }
+    edge = parse_graph(json.dumps(payload)).edges[0]
+    assert edge.provider is None
 
 
 def test_empty_payload_is_malformed() -> None:
