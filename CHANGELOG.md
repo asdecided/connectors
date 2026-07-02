@@ -4,6 +4,32 @@ All notable changes to `rac-connectors` are recorded here. Versions are CalVer
 (`YYYY.M.N`, ADR-008); the version is derived from the git tag by setuptools-scm,
 and the published distribution is `rac-connectors`.
 
+## Unreleased
+
+The Atlassian suite connector — Jira + Confluence (rac-core ADR-090), the
+first export-direction integration. Release gate: the docs page's live
+smoke test against a real Cloud site (itsthelore/rac-connectors#10).
+
+### Added
+
+- The `atlassian` module and the nested CLI verbs: `rac-connect atlassian
+  verify` (read-only Jira `related_tickets` existence/state checks over
+  `rac export --graph`, exit 3 on findings — the CI gate; ADR-010) and
+  `rac-connect atlassian publish` (idempotent managed Confluence pages over
+  `rac export --documents`, keyed by the `lore.artifact_id` content
+  property with body-hash skip and conflict surfacing; ADR-011).
+- The `[atlassian]` extra — an internal `httpx` client (no Atlassian SDK)
+  with Basic auth from `ATLASSIAN_*` environment variables and capped,
+  jittered backoff honouring `Retry-After`.
+- The `TicketVerifier` / `PagePublisher` seams and `VerifySummary` beside
+  the existing `Connector` / `GraphConnector` shapes (ADR-010).
+
+### Changed
+
+- The graph reader now surfaces the export's `external` / `provider` edge
+  markers (rac-core ADR-087/096) — additive; existing connectors are
+  unaffected.
+
 ## 2026.6.1
 
 First published release of **rac-connectors** — the integrations companion for
