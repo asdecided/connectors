@@ -57,6 +57,11 @@ cognee = ["cognee>=1,<2"]
 # fake-driven test-suite stay dependency-free. Embeddings come from an external
 # endpoint over stdlib HTTP (no SDK), so only qdrant-client is required here.
 qdrant = ["qdrant-client>=1.7,<2"]
+# The live Atlassian verify/publish needs httpx (an internal client, no
+# Atlassian SDK — ADR-010); the core install and the fake-driven test-suite
+# stay dependency-free. CI installs this extra so the mock-transport wire
+# tests run; they importorskip httpx and pass silently without it.
+atlassian = ["httpx>=0.27,<1"]
 dev = ["pytest>=7.0", "ruff", "mypy"]
 
 [project.scripts]
@@ -96,5 +101,6 @@ module = [
     "letta_client.*",
     "cognee.*",
     "qdrant_client.*",
+    "httpx.*",
 ]
 ignore_missing_imports = true
