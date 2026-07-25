@@ -1,21 +1,15 @@
-# rac-connectors
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/itsthelore/rac-connectors/main/rac/assets/images/lore-header-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/itsthelore/rac-connectors/main/rac/assets/images/lore-header-light.png">
-  <img alt="Lore — agents that know why. Deterministic. Read-only. No RAG, no guessing." src="https://raw.githubusercontent.com/itsthelore/rac-connectors/main/rac/assets/images/lore-header-light.png">
-</picture>
+# AsDecided Connectors
 
 <p align="center">
 <a href="#quickstart">Quickstart</a> ·
 <a href="#how-it-works">How it works</a> ·
 <a href="#connectors">Connectors</a> ·
 <a href="#add-a-backend">Add a backend</a> ·
-<a href="https://github.com/itsthelore/rac-core">Lore / RAC</a>
+<a href="https://github.com/asdecided/core">Lore / RAC</a>
 </p>
 
 <p align="center">
-<a href="https://github.com/itsthelore/rac-connectors/actions/workflows/ci.yml"><img src="https://github.com/itsthelore/rac-connectors/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+<a href="https://github.com/asdecided/connectors/actions/workflows/ci.yml"><img src="https://github.com/asdecided/connectors/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
 <img src="https://img.shields.io/badge/python-3.11%2B-blue" alt="Python">
 <a href="https://mypy-lang.org/"><img src="https://img.shields.io/badge/types-Mypy-blue.svg" alt="Typed"></a>
 <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache%202.0-blue" alt="License: Apache 2.0"></a>
@@ -23,7 +17,7 @@
 
 > **Push the decisions your team already recorded into the memory and RAG tools your agent already uses — so it can recall fuzzily there, then verify in Lore.**
 
-rac-connectors is the **outbound** companion to [Lore](https://github.com/itsthelore/rac-core) — the product surface of **RAC — Requirements as Code**, the open-source engine underneath. RAC keeps your team's requirements, decisions, designs, roadmaps, and prompts as typed Markdown and serves them **read-only** over MCP. This repo holds the connectors that ship RAC's export payloads into the external memory, RAG, and graph backends a team already runs. It is a *consumer of a stable export contract*, not part of the engine: no embeddings, vectors, or model calls happen here — those live in the backend. The first connector is **Supermemory**.
+This repository is the **outbound** companion to [AsDecided Core](https://github.com/asdecided/core). It ships stable export payloads into the external memory, RAG, graph, and collaboration backends a team already runs. It is a *consumer of the engine contract*, not part of the engine: embeddings, vectors, and model calls remain the configured backend's responsibility.
 
 ## How it compares
 
@@ -84,10 +78,10 @@ pip install 'rac-connectors[supermemory]'
 
 ```bash
 # one-liner, no clone:
-pip install 'rac-connectors[supermemory] @ git+https://github.com/itsthelore/rac-connectors.git'
+pip install 'rac-connectors[supermemory] @ git+https://github.com/asdecided/connectors.git'
 
 # or from a clone (editable, for hacking on it):
-git clone https://github.com/itsthelore/rac-connectors.git
+git clone https://github.com/asdecided/connectors.git
 cd rac-connectors
 pip install -e '.[supermemory]'
 ```
@@ -98,7 +92,7 @@ pip install -e '.[supermemory]'
 | `[<backend>]` | + that backend's SDK, needed for a live push — one per connector (see [Connectors](#connectors)) |
 | `[dev]` | + ruff, mypy, and pytest for development |
 
-Requires Python 3.11+, and the [`rac`](https://github.com/itsthelore/rac-core)
+Requires Python 3.11+, and the [`rac`](https://github.com/asdecided/core)
 engine (`pip install requirements-as-code`) to produce the export. The core
 install and the whole test-suite are dependency-free — provider SDKs are
 optional extras, so CI never needs a live backend.
@@ -601,7 +595,7 @@ this page is `drafted (live run pending)`. To validate end to end:
    retries honour `Retry-After` rather than hammering.
 
 Then flip this page's `status` to `shipped` — and only then consider a
-release tag (the gate recorded on itsthelore/rac-connectors#10).
+release tag (the gate recorded on asdecided/connectors#10).
 
 **Full page:** [`docs/connectors/atlassian.md`](docs/connectors/atlassian.md)
 
@@ -726,8 +720,8 @@ pgvector, LanceDB; graph → Neo4j, Zep Graphiti, Cognee, Microsoft GraphRAG.
 This repo consumes Lore's export contract; the engine and its CLI are
 documented with Lore.
 
-- [Lore / RAC](https://github.com/itsthelore/rac-core) — the engine, CLI, and MCP server
-- [CLI reference — `rac export`](https://itsthelore.github.io/rac-core/cli/#export) — the `--documents` / `--graph` contract this consumes
+- [Lore / RAC](https://github.com/asdecided/core) — the engine, CLI, and MCP server
+- [CLI reference — `rac export`](https://asdecided.github.io/core/cli/#export) — the `--documents` / `--graph` contract this consumes
 
 ## Origin
 

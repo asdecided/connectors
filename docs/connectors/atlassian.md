@@ -137,4 +137,4 @@ this page is `drafted (live run pending)`. To validate end to end:
    retries honour `Retry-After` rather than hammering.
 
 Then flip this page's `status` to `shipped` — and only then consider a
-release tag (the gate recorded on itsthelore/rac-connectors#10).
+release tag (the gate recorded on asdecided/connectors#10).
