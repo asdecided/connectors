@@ -26,7 +26,7 @@
     },
     {
       "source": "RAC-1",
-      "target": "itsthelore/rac-core#228",
+      "target": "asdecided/core#228",
       "type": "related_tickets",
       "directed": false,
       "resolved": false,

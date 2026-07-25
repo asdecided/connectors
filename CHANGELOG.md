@@ -8,7 +8,7 @@ and the published distribution is `rac-connectors`.
 
 The Atlassian suite connector — Jira + Confluence (rac-core ADR-090), the
 first export-direction integration. Release gate: the docs page's live
-smoke test against a real Cloud site (itsthelore/rac-connectors#10).
+smoke test against a real Cloud site (asdecided/connectors#10).
 
 ### Added
 

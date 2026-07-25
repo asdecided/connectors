@@ -28,10 +28,10 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/itsthelore/rac-connectors"
-Repository = "https://github.com/itsthelore/rac-connectors"
-Issues = "https://github.com/itsthelore/rac-connectors/issues"
-Engine = "https://github.com/itsthelore/rac-core"
+Homepage = "https://github.com/asdecided/connectors"
+Repository = "https://github.com/asdecided/connectors"
+Issues = "https://github.com/asdecided/connectors/issues"
+Engine = "https://github.com/asdecided/core"
 
 [project.optional-dependencies]
 # The live Supermemory push needs the provider SDK; the core install and the

@@ -91,10 +91,10 @@ under the seams fixed by ADR-010 and the identity model fixed by ADR-011.
 
 ## Related Tickets
 
-- itsthelore/rac-connectors#4
-- itsthelore/rac-connectors#5
-- itsthelore/rac-connectors#6
-- itsthelore/rac-connectors#7
-- itsthelore/rac-connectors#8
-- itsthelore/rac-connectors#9
-- itsthelore/rac-connectors#10
+- asdecided/connectors#4
+- asdecided/connectors#5
+- asdecided/connectors#6
+- asdecided/connectors#7
+- asdecided/connectors#8
+- asdecided/connectors#9
+- asdecided/connectors#10
