@@ -1,11 +1,13 @@
 # AsDecided Connectors
 
+[Product site](https://asdecided.com/) · [Ecosystem documentation](https://asdecided.com/docs/ecosystem/) · [Canonical sources](https://asdecided.com/sources)
+
 <p align="center">
 <a href="#quickstart">Quickstart</a> ·
 <a href="#how-it-works">How it works</a> ·
 <a href="#connectors">Connectors</a> ·
 <a href="#add-a-backend">Add a backend</a> ·
-<a href="https://github.com/asdecided/core">Lore / RAC</a>
+<a href="https://github.com/asdecided/core">AsDecided Core</a>
 </p>
 
 <p align="center">
@@ -721,7 +723,7 @@ This repo consumes Lore's export contract; the engine and its CLI are
 documented with Lore.
 
 - [Lore / RAC](https://github.com/asdecided/core) — the engine, CLI, and MCP server
-- [CLI reference — `rac export`](https://asdecided.github.io/core/cli/#export) — the `--documents` / `--graph` contract this consumes
+- [CLI reference — `rac export`](https://asdecided.com/docs/vendor/core/cli/#export) — the `--documents` / `--graph` contract this consumes
 
 ## Origin
 

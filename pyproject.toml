@@ -28,7 +28,8 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/asdecided/connectors"
+Homepage = "https://asdecided.com/"
+Documentation = "https://asdecided.com/docs/ecosystem/"
 Repository = "https://github.com/asdecided/connectors"
 Issues = "https://github.com/asdecided/connectors/issues"
 Engine = "https://github.com/asdecided/core"
